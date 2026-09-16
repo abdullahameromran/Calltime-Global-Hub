@@ -438,7 +438,29 @@
 .site-nav { position: absolute; z-index: 10; top: 0; right: 0; left: 0; }
 .nav-inner { display: flex; height: 83px; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(247,239,220,0.17); }
 .logo-lockup { display: flex; align-items: center; gap: 9px; color: #f7efdc; text-decoration: none; }
-.logo-mark { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 7px; color: #18213d; background: #f0d19b; font-family: var(--app-font-mono); font-size: 0.58rem; font-weight: 700; }
+.logo-mark {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #f7d39a 0%, #f0c676 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 8px 22px rgba(231, 54, 97, 0.15);
+}
+
+.logo-mark svg {
+  display: block;
+}
+
+.logo-word {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  letter-spacing: -0.08em;
+  font-weight: 700;
+  text-transform: lowercase;
+  color: #f7efdc;
+}
 .logo-word { font-family: var(--font-display); font-size: 1.12rem; font-weight: 700; letter-spacing: -0.07em; }
 .nav-links { display: flex; align-items: center; gap: 28px; }
 .nav-link { color: rgba(247,239,220,0.67); font-family: var(--app-font-mono); font-size: 0.63rem; letter-spacing: 0.05em; text-decoration: none; text-transform: uppercase; transition: color 180ms ease; }
@@ -1203,7 +1225,20 @@
   box-shadow: 12px 0 35px rgba(23, 33, 61, .08);
 }
 .dashboard-brand { display: flex; align-items: center; gap: 9px; padding: 0 13px 34px; font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; letter-spacing: -.07em; }
-.dashboard-brand-mark { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 7px; color: var(--dash-ink); background: #f0d19b; font-family: var(--app-font-mono); font-size: .58rem; letter-spacing: 0; }
+.dashboard-brand-mark {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #f7d39a 0%, #f0c676 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.dashboard-brand-mark svg {
+  display: block;
+}
 .brand-dot { width: 5px; height: 5px; margin-left: 1px; border-radius: 50%; background: var(--dash-coral); }
 .mono-label { color: var(--dash-muted); font-family: var(--app-font-mono); font-size: .58rem; letter-spacing: .11em; line-height: 1.3; text-transform: uppercase; }
 .dashboard-sidebar .mono-label { color: rgba(246,239,223,.42); }
