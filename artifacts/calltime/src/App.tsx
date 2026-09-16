@@ -10,7 +10,7 @@ import {
   MapPin,
   Plane,
   QrCode,
-  Route,
+  Route as RouteIcon,
   ShieldCheck,
   Ticket,
   Truck,
@@ -19,6 +19,8 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
+import Dashboard from './components/Dashboard';
+import { Route as WouterRoute, Switch } from 'wouter';
 
 type Role = {
   name: string;
@@ -42,7 +44,7 @@ const roles: Role[] = [
     title: 'Keep the road in rhythm.',
     description:
       'Every itinerary, transfer, room and credential attached to the same person record — ready for the next city before the cases leave the last one.',
-    icon: Route,
+    icon: RouteIcon,
     outputs: ['Tour party', 'Travel days', 'Personal links'],
   },
   {
@@ -72,7 +74,7 @@ const services = [
   { icon: WalletCards, title: 'Briefs & handoffs', copy: 'Give each team the exact slice of information needed to move.', tone: 'light' },
 ];
 
-function App() {
+function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -437,6 +439,15 @@ function App() {
         </div>
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Switch>
+      <WouterRoute path="/dashboard" component={Dashboard} />
+      <WouterRoute path="/" component={LandingPage} />
+    </Switch>
   );
 }
 
