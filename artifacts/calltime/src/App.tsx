@@ -138,17 +138,15 @@ function App() {
           >
             {menuOpen ? <X size={23} /> : <Menu size={23} />}
           </button>
-          {menuOpen && (
-            <div className="mobile-menu" data-testid="mobile-navigation">
-              <a className="nav-link" href="#platform" onClick={() => setMenuOpen(false)} data-testid="mobile-link-platform">Platform</a>
-              <a className="nav-link" href="#global-id" onClick={() => setMenuOpen(false)} data-testid="mobile-link-global-id">CT Global ID</a>
-              <a className="nav-link" href="#logistics" onClick={() => setMenuOpen(false)} data-testid="mobile-link-logistics">People logistics</a>
-              <a className="nav-link" href="#roles" onClick={() => setMenuOpen(false)} data-testid="mobile-link-roles">For teams</a>
-              <button className="button-accent" type="button" onClick={openDemo} data-testid="button-mobile-demo">
+           <div className={`mobile-menu ${menuOpen ? 'is-open' : ''}`} aria-hidden={!menuOpen} data-testid="mobile-navigation">
+               <a className="nav-link" href="#platform" tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)} data-testid="mobile-link-platform">Platform</a>
+               <a className="nav-link" href="#global-id" tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)} data-testid="mobile-link-global-id">CT Global ID</a>
+               <a className="nav-link" href="#logistics" tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)} data-testid="mobile-link-logistics">People logistics</a>
+               <a className="nav-link" href="#roles" tabIndex={menuOpen ? 0 : -1} onClick={() => setMenuOpen(false)} data-testid="mobile-link-roles">For teams</a>
+               <button className="button-accent" tabIndex={menuOpen ? 0 : -1} type="button" onClick={openDemo} data-testid="button-mobile-demo">
                 Book a walkthrough <ArrowUpRight size={14} />
               </button>
-            </div>
-          )}
+           </div>
         </div>
       </header>
 
@@ -246,7 +244,7 @@ function App() {
                 ['03', 'Verify', 'Put the right access, brief and credential in every hand.'],
                 ['04', 'Deliver', 'Give teams the signal they need when the show is live.'],
               ].map(([number, title, copy]) => (
-                <article className="flow-step" key={number} data-testid={`card-flow-${number}`}>
+                 <article className="flow-step" tabIndex={0} key={number} data-testid={`card-flow-${number}`}>
                   <span className="flow-number">{number}</span>
                   <h3>{title}</h3>
                   <p>{copy}</p>
@@ -258,7 +256,7 @@ function App() {
 
         <section className="section id-section" id="global-id" aria-labelledby="global-id-title">
           <div className="container-wide id-grid">
-            <div className="id-card reveal" data-testid="card-global-id-preview">
+             <div className="id-card reveal" tabIndex={0} data-testid="card-global-id-preview">
               <div className="id-card-top">
                 <div className="id-mark"><span className="mark-box">ct</span> CT Global ID</div>
                 <span className="id-chip">Verified profile</span>
@@ -309,7 +307,7 @@ function App() {
             </div>
             <div className="logistics-grid">
               {services.map(({ icon: Icon, title, copy }, index) => (
-                <article className={`logistics-card reveal delay-${(index % 3) + 1}`} key={title} data-testid={`card-logistics-${index}`}>
+                 <article className={`logistics-card reveal delay-${(index % 3) + 1}`} tabIndex={0} key={title} data-testid={`card-logistics-${index}`}>
                   <span className="card-icon"><Icon size={17} /></span>
                   <h3>{title}</h3>
                   <p>{copy}</p>
@@ -376,7 +374,7 @@ function App() {
                 ))}
               </div>
             </div>
-            <div className="role-panel reveal delay-1" role="tabpanel" data-testid="panel-active-role">
+             <div className="role-panel reveal delay-1" role="tabpanel" data-testid="panel-active-role">
               <div className="role-panel-top"><span className="role-panel-icon"><SelectedRoleIcon size={19} /></span><span className="eyebrow">Calltime view / 0{roles.findIndex((role) => role.name === activeRole) + 1}</span></div>
               <h3>{selectedRole.title}</h3>
               <p>{selectedRole.description}</p>
