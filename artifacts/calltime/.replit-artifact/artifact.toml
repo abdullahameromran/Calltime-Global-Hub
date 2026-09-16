@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Calltime"
+description = "A premium landing page for Calltime, a back-of-house event operations platform built for live entertainment teams in the Middle East."
+version = "1.0.0"
+id = "artifacts/calltime"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21147
+
+[services.development]
+run = "pnpm --filter @workspace/calltime run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/calltime", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/calltime/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21147"
+BASE_PATH = "/"
