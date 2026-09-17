@@ -12,6 +12,7 @@ import {
   QrCode,
   Route as RouteIcon,
   ShieldCheck,
+  Smartphone,
   Ticket,
   Truck,
   Users,
@@ -20,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Dashboard from "./components/Dashboard";
+import BrandMark from "./components/BrandMark";
 import { Route as WouterRoute, Switch } from "wouter";
 
 type Role = {
@@ -29,60 +31,6 @@ type Role = {
   icon: LucideIcon;
   outputs: string[];
 };
-
-function LogoMark({
-  size = 28,
-  dark = false,
-}: {
-  size?: number;
-  dark?: boolean;
-}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      style={{ display: "block" }}
-    >
-      <rect
-        x="4"
-        y="4"
-        width="56"
-        height="56"
-        rx="15"
-        fill={dark ? "#F2D29C" : "#F7D39A"}
-      />
-      <path
-        d="M20 16.5C22.7 15.1 25.8 14.4 29 14.4C39.2 14.4 47 22.2 47 32C47 41.8 39.2 49.6 29 49.6C25.8 49.6 22.7 48.9 20 47.5"
-        stroke={dark ? "#141D36" : "#111827"}
-        strokeWidth="4.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M39 18H20V46H39"
-        stroke={dark ? "#141D36" : "#111827"}
-        strokeWidth="4.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M32 18V46"
-        stroke={dark ? "#141D36" : "#111827"}
-        strokeWidth="4.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 32H35"
-        stroke={dark ? "#141D36" : "#111827"}
-        strokeWidth="4.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 const roles: Role[] = [
   {
@@ -209,9 +157,10 @@ function LandingPage() {
             aria-label="Calltime home"
           >
             <span className="logo-mark">
-              <LogoMark size={28} dark />
+              <BrandMark size={30} />
             </span>
             <span className="logo-word">calltime</span>
+            <span className="brand-suffix">global</span>
           </a>
           <nav className="nav-links" aria-label="Primary navigation">
             <a
@@ -237,6 +186,13 @@ function LandingPage() {
             </a>
             <a className="nav-link" href="#roles" data-testid="link-roles">
               For teams
+            </a>
+            <a
+              className="nav-workspace"
+              href="/dashboard"
+              data-testid="link-dashboard"
+            >
+              Live workspace <span>↗</span>
             </a>
             <button
               className="button-accent nav-cta"
@@ -298,6 +254,15 @@ function LandingPage() {
             >
               For teams
             </a>
+            <a
+              className="nav-workspace"
+              href="/dashboard"
+              tabIndex={menuOpen ? 0 : -1}
+              onClick={() => setMenuOpen(false)}
+              data-testid="mobile-link-dashboard"
+            >
+              Live workspace <span>↗</span>
+            </a>
             <button
               className="button-accent"
               tabIndex={menuOpen ? 0 : -1}
@@ -317,21 +282,21 @@ function LandingPage() {
           <div className="container-wide hero-content">
             <div className="hero-copy reveal">
               <div className="eyebrow" data-testid="text-hero-eyebrow">
-                Event operations / Middle East
+                Back-of-house event operations / Middle East
               </div>
               <h1
                 className="hero-title"
                 id="hero-title"
                 data-testid="text-hero-title"
               >
-                The show moves
+                Every person.
                 <br />
-                <em>as one.</em>
+                <em>Every movement.</em>
               </h1>
               <p className="hero-subtitle" data-testid="text-hero-subtitle">
-                Calltime is the calm command layer behind high-energy live
-                events. Move artists, crew, suppliers and guests through every
-                detail — from first flight to final scan.
+                Calltime connects the people logistics behind major live
+                events—artists, crew, suppliers and guests—from first flight
+                to final accreditation scan.
               </p>
               <div className="hero-actions">
                 <button
@@ -344,15 +309,16 @@ function LandingPage() {
                 </button>
                 <a
                   className="button-quiet"
-                  href="#platform"
+                  href="/dashboard"
                   data-testid="link-hero-platform"
                 >
-                  How it works <ChevronRight size={15} />
+                  Explore the workspace <ChevronRight size={15} />
                 </a>
               </div>
-              <div className="hero-proof" data-testid="text-hero-proof">
-                <span className="proof-line" /> Built for the biggest nights in
-                the region
+              <div className="hero-signals" data-testid="text-hero-proof">
+                <span><ShieldCheck size={14} /> Permanent CT Global ID</span>
+                <span><Smartphone size={14} /> Personal mobile link</span>
+                <span><QrCode size={14} /> QR accreditation</span>
               </div>
             </div>
             <div
@@ -368,7 +334,7 @@ function LandingPage() {
                     <i />
                   </div>
                   <span className="console-brand">CALLTIME / OPERATIONS</span>
-                  <span className="console-status">● Live</span>
+                  <span className="console-status"><i /> Live operation</span>
                 </div>
                 <div className="console-body">
                   <aside className="console-nav">
@@ -483,17 +449,17 @@ function LandingPage() {
               <div className="reveal">
                 <div className="eyebrow eyebrow-dark">01 / The platform</div>
                 <div className="intro-stat" data-testid="text-platform-stat">
-                  <strong>One connected experience.</strong>Fewer handoffs
+                  <strong>One connected experience.</strong> Fewer handoffs
                   hiding in inboxes. More certainty at every checkpoint.
                 </div>
               </div>
               <div className="section-heading reveal delay-1">
-                <h2 id="platform-title">Big shows are won in the details.</h2>
+                <h2 id="platform-title">One journey from invite to ingress.</h2>
                 <p className="dark-copy">
-                  A headliner does not arrive alone. There are drivers, visas,
-                  runners, rooming lists, access zones, vendors and dozens of
-                  tiny promises behind every smooth entrance. Calltime keeps the
-                  promises connected.
+                  Create a permanent identity once, assign it to an event, then
+                  keep every travel detail, room, movement and credential in
+                  sync. The operations team sees the full picture; each person
+                  sees exactly what they need.
                 </p>
               </div>
             </div>
@@ -504,23 +470,23 @@ function LandingPage() {
               {[
                 [
                   "01",
-                  "Plan",
-                  "Build the people picture before the first invite goes out.",
+                  "Create the profile",
+                  "Every artist, crew member, supplier and guest receives a permanent CT Global ID.",
                 ],
                 [
                   "02",
-                  "Move",
-                  "Coordinate every itinerary, transfer and arrival window.",
+                  "Assign the event",
+                  "Add the person once and connect their role, schedule, access and event team.",
                 ],
                 [
                   "03",
-                  "Verify",
-                  "Put the right access, brief and credential in every hand.",
+                  "Send their link",
+                  "A personal link opens their own live itinerary on any phone, with no searching.",
                 ],
                 [
                   "04",
-                  "Deliver",
-                  "Give teams the signal they need when the show is live.",
+                  "Move and scan",
+                  "Flights, drivers, hotel and accreditation stay together through show day.",
                 ],
               ].map(([number, title, copy]) => (
                 <article
@@ -688,12 +654,13 @@ function LandingPage() {
                 <h2 id="link-title">Your logistics. In your pocket.</h2>
                 <p className="dark-copy">
                   Give each person a personal link that feels clear, not
-                  cluttered. Flights, hotel, driver, call time and credential —
-                  in the order they need it, wherever the day takes them.
+                  cluttered. Their flight, ground transport, hotel and
+                  accreditation QR code—in the order they need it, wherever the
+                  day takes them.
                 </p>
               </div>
               <div className="link-note">
-                <CircleCheck size={15} /> No app download. No new password.
+                <CircleCheck size={15} /> One private link. Their details only.
               </div>
             </div>
             <div
@@ -710,7 +677,9 @@ function LandingPage() {
               <div className="phone">
                 <div className="phone-screen">
                   <div className="phone-header">
-                    <span className="phone-brand">calltime</span>
+                    <span className="phone-brand">
+                      <BrandMark size={17} /> calltime
+                    </span>
                     <span className="phone-avatar">NA</span>
                   </div>
                   <div className="phone-greeting">
@@ -843,6 +812,9 @@ function LandingPage() {
               >
                 Book a private walkthrough <ArrowUpRight size={15} />
               </button>
+              <a className="cta-workspace-link" href="/dashboard">
+                Or explore the live workspace <ChevronRight size={14} />
+              </a>
             </div>
           </div>
         </section>
@@ -852,9 +824,10 @@ function LandingPage() {
         <div className="container-wide footer-inner">
           <a className="logo-lockup" href="#top" data-testid="link-footer-logo">
             <span className="logo-mark">
-              <LogoMark size={28} dark />
+              <BrandMark size={30} />
             </span>
             <span className="logo-word">calltime</span>
+            <span className="brand-suffix">global</span>
           </a>
           <span className="footer-copy">
             The operational layer for live entertainment

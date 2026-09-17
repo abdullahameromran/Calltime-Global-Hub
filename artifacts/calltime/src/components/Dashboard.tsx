@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -25,6 +25,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import BrandMark from "./BrandMark";
 
 type View = "overview" | "people" | "movements" | "accreditation";
 type PersonStatus = "Ready" | "Review" | "Missing";
@@ -256,6 +257,17 @@ function Dashboard() {
     window.setTimeout(() => setNotice(""), 2800);
   };
 
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [mobileNavOpen]);
+
   return (
     <div className="dashboard-page" data-testid="page-dashboard">
       <aside
@@ -264,46 +276,19 @@ function Dashboard() {
       >
         <div className="dashboard-brand">
           <span className="dashboard-brand-mark">
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 64 64"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-              style={{ display: "block" }}
-            >
-              <rect x="4" y="4" width="56" height="56" rx="15" fill="#F7D39A" />
-              <path
-                d="M20 16.5C22.7 15.1 25.8 14.4 29 14.4C39.2 14.4 47 22.2 47 32C47 41.8 39.2 49.6 29 49.6C25.8 49.6 22.7 48.9 20 47.5"
-                stroke="#111827"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M39 18H20V46H39"
-                stroke="#111827"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M32 18V46"
-                stroke="#111827"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M18 32H35"
-                stroke="#111827"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <BrandMark size={30} />
           </span>
-          <span>calltime</span>
-          <span className="brand-dot" />
+          <span className="dashboard-brand-word">calltime</span>
+          <span className="dashboard-brand-suffix">global</span>
         </div>
+        <button
+          className="dashboard-sidebar-close"
+          type="button"
+          aria-label="Close workspace navigation"
+          onClick={() => setMobileNavOpen(false)}
+        >
+          <X size={18} />
+        </button>
         <div className="workspace-switcher">
           <span className="mono-label">Workspace</span>
           <button
@@ -380,13 +365,26 @@ function Dashboard() {
         </div>
       </aside>
 
+      {mobileNavOpen && (
+        <button
+          className="dashboard-sidebar-backdrop"
+          type="button"
+          aria-label="Close workspace navigation"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+
       <main className="dashboard-main">
         <header className="dashboard-topbar">
           <button
             className="mobile-menu-trigger"
             type="button"
             onClick={() => setMobileNavOpen((open) => !open)}
-            aria-label="Open workspace navigation"
+            aria-label={
+              mobileNavOpen
+                ? "Close workspace navigation"
+                : "Open workspace navigation"
+            }
             data-testid="button-open-dashboard-nav"
           >
             {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
