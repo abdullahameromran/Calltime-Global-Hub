@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -54,6 +54,27 @@ function dateTimeInput(value: unknown) {
 function formatCtGlobalId(id: string) {
   const compact = id.replaceAll("-", "").toUpperCase();
   return `CT-${compact.slice(0, 4)}-${compact.slice(4, 6)}`;
+}
+
+function nextCalendarDate(value: string) {
+  if (!value) return "";
+  const nextDay = new Date(`${value}T00:00:00Z`);
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  return nextDay.toISOString().slice(0, 10);
+}
+
+function constrainFollowingDate(
+  event: ChangeEvent<HTMLInputElement>,
+  followingFieldName: string,
+  dateOnly = false,
+) {
+  const following = event.currentTarget.form?.elements.namedItem(followingFieldName);
+  if (!(following instanceof HTMLInputElement)) return;
+
+  let minimum = event.currentTarget.value;
+  if (dateOnly && minimum) minimum = nextCalendarDate(minimum);
+  following.min = minimum;
+  if (following.value && following.value < minimum) following.value = "";
 }
 
 type Workspace = {
@@ -147,6 +168,7 @@ export default function PhaseOneAdmin() {
   const [activeView, setActiveView] = useState<AdminView>("overview");
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [returnAfterRole, setReturnAfterRole] = useState<"person" | "edit" | null>(null);
+  const [dialogError, setDialogError] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -177,6 +199,10 @@ export default function PhaseOneAdmin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
+  useEffect(() => {
+    setDialogError("");
+  }, [dialog]);
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return (workspace?.assignments ?? []).filter((item) =>
@@ -193,7 +219,9 @@ export default function PhaseOneAdmin() {
       setNotice(success);
       await refresh();
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Something went wrong");
+      const message = error instanceof Error ? error.message : "Something went wrong";
+      if (dialog) setDialogError(message);
+      else setNotice(message);
     } finally {
       setBusy(false);
     }
@@ -238,12 +266,18 @@ export default function PhaseOneAdmin() {
   const submitEvent = async (formEvent: FormEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
     const values = new FormData(formEvent.currentTarget);
+    const startsAt = String(values.get("startsAt"));
+    const endsAt = String(values.get("endsAt"));
+    if (new Date(endsAt) <= new Date(startsAt)) {
+      setDialogError("Event end date and time must be after the start date and time.");
+      return;
+    }
     setBusy(true);
     setNotice("");
     try {
       const created = await createEvent({
         name: String(values.get("name")), city: String(values.get("city")), venueName: String(values.get("venue")),
-        startsAt: String(values.get("startsAt")), endsAt: String(values.get("endsAt")), timezone: String(values.get("timezone")),
+        startsAt, endsAt, timezone: String(values.get("timezone")),
       });
       setDialog(null);
       setActiveEventId(created.id);
@@ -251,7 +285,7 @@ export default function PhaseOneAdmin() {
       setNotice("Event created and selected");
       await refresh(created.id);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Unable to create event");
+      setDialogError(error instanceof Error ? error.message : "Unable to create event");
     } finally {
       setBusy(false);
     }
@@ -270,7 +304,7 @@ export default function PhaseOneAdmin() {
       setDialog(returnAfterRole);
       setReturnAfterRole(null);
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Unable to create role");
+      setDialogError(error instanceof Error ? error.message : "Unable to create role");
     } finally {
       setBusy(false);
     }
@@ -281,7 +315,7 @@ export default function PhaseOneAdmin() {
     if (!event) return;
     const values = new FormData(formEvent.currentTarget);
     const role = workspace?.roles.find((item) => item.id === values.get("roleId"));
-    if (!role) return setNotice("Create and select an event role first");
+    if (!role) return setDialogError("Create and select an event role first.");
     const common = {
       roleId: role.id, roleType: role.role_type, fullName: String(values.get("fullName")),
       email: String(values.get("email")), phone: String(values.get("phone")), callTime: String(values.get("callTime")),
@@ -310,9 +344,15 @@ export default function PhaseOneAdmin() {
         vehicle_reference: values.get("vehicle"), driver_name: values.get("driverName"), driver_phone: values.get("driverPhone"),
       }, firstTransport?.id), firstTransport ? "Transport updated" : "Transport added");
     } else {
+      const checkIn = String(values.get("checkIn"));
+      const checkOut = String(values.get("checkOut"));
+      if (new Date(`${checkOut}T00:00:00`) <= new Date(`${checkIn}T00:00:00`)) {
+        setDialogError("Hotel checkout must be at least one day after check-in.");
+        return;
+      }
       void run(() => addHotel(selected.id, {
         hotel_name: values.get("hotelName"), room_type: values.get("roomType"), confirmation_number: values.get("confirmation"),
-        check_in_date: values.get("checkIn"), check_out_date: values.get("checkOut"), status: "confirmed",
+        check_in_date: checkIn, check_out_date: checkOut, status: "confirmed",
       }, firstHotel?.id), firstHotel ? "Hotel booking updated" : "Hotel booking added");
     }
   };
@@ -507,13 +547,14 @@ export default function PhaseOneAdmin() {
 
       {dialog && <div className="phase-dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && setDialog(null)}><section className="phase-dialog">
         <header><div><span>CALLTIME / PHASE 01</span><h2>{dialog === "person" ? "Add a person" : dialog === "edit" ? "Edit person" : dialog === "role" ? "Create event role" : dialog === "event" ? "Create pilot event" : "Add logistics"}</h2></div><button onClick={() => setDialog(null)}><X size={18} /></button></header>
-        {dialog === "event" && <form onSubmit={submitEvent} className="phase-form"><label>Event name<input name="name" required /></label><div className="two"><label>City<input name="city" /></label><label>Venue<input name="venue" /></label></div><div className="two"><label>Starts<input name="startsAt" type="datetime-local" required /></label><label>Ends<input name="endsAt" type="datetime-local" required /></label></div><label>Timezone<input name="timezone" defaultValue="Asia/Riyadh" required /></label><button className="mvp-primary" disabled={busy}>Create event</button></form>}
+        {dialogError && <div className="phase-dialog-error"><X size={14} /><span>{dialogError}</span></div>}
+        {dialog === "event" && <form onSubmit={submitEvent} className="phase-form"><label>Event name<input name="name" required /></label><div className="two"><label>City<input name="city" /></label><label>Venue<input name="venue" /></label></div><div className="two"><label>Starts<input name="startsAt" type="datetime-local" onChange={(e) => constrainFollowingDate(e, "endsAt")} required /></label><label>Ends<input name="endsAt" type="datetime-local" required /></label></div><small className="phase-form-hint">The end date and time must be later than the start.</small><label>Timezone<input name="timezone" defaultValue="Asia/Riyadh" required /></label><button className="mvp-primary" disabled={busy}>Create event</button></form>}
         {dialog === "role" && <form onSubmit={submitRole} className="phase-form"><label>Role label<input name="label" placeholder="Lighting crew" required /></label><label>Role type<select name="roleType">{roleTypes.map((role) => <option value={role.value} key={role.value}>{role.label}</option>)}</select></label><button className="mvp-primary" disabled={busy}>Add role</button></form>}
         {(dialog === "person" || dialog === "edit") && <form onSubmit={submitPerson} className="phase-form"><label>Full name<input name="fullName" defaultValue={dialog === "edit" ? selected?.people.full_name : ""} required /></label><div className="two"><label>Email<input name="email" type="email" defaultValue={dialog === "edit" ? selected?.people.email ?? "" : ""} /></label><label>Phone<input name="phone" type="tel" defaultValue={dialog === "edit" ? selected?.people.phone ?? "" : ""} /></label></div>{dialog === "person" && <label>Organization / agency<input name="organization" /></label>}<div className="phase-role-picker"><div><span>Event role</span><button type="button" onClick={() => { setReturnAfterRole(dialog); setDialog("role"); }}><Plus size={13} /> Create new role</button></div><select name="roleId" defaultValue={dialog === "edit" ? selected?.event_roles?.id ?? "" : ""} required><option value="">Select role</option>{workspace?.roles.map((role) => <option value={role.id} key={role.id}>{role.label}</option>)}</select>{workspace?.roles.length === 0 && <small>No roles exist for this event yet. Create one to continue.</small>}</div><label>Call time<input name="callTime" type="datetime-local" defaultValue={dialog === "edit" ? dateTimeInput(selected?.call_time) : ""} /></label><button className="mvp-primary" disabled={busy || workspace?.roles.length === 0}>{dialog === "edit" ? "Save changes" : "Create CT Global ID & assign"}</button></form>}
         {dialog === "logistics" && selected && <><div className="phase-logistics-tabs"><button className={logisticsKind === "flight" ? "active" : ""} onClick={() => setLogisticsKind("flight")}><Plane size={14} /> Flight</button><button className={logisticsKind === "transport" ? "active" : ""} onClick={() => setLogisticsKind("transport")}><Truck size={14} /> Transport</button><button className={logisticsKind === "hotel" ? "active" : ""} onClick={() => setLogisticsKind("hotel")}><Hotel size={14} /> Hotel</button></div><form onSubmit={submitLogistics} className="phase-form">
           {logisticsKind === "flight" && <><div className="two"><label>Direction<select name="direction" defaultValue={firstFlight?.direction ?? "arrival"}><option value="arrival">Arrival</option><option value="departure">Departure</option></select></label><label>Airline<input name="airline" defaultValue={firstFlight?.airline ?? ""} /></label></div><label>Flight number<input name="flightNumber" defaultValue={firstFlight?.flight_number ?? ""} required /></label><div className="two"><label>Origin<input name="origin" defaultValue={firstFlight?.origin_airport ?? ""} /></label><label>Destination<input name="destination" defaultValue={firstFlight?.destination_airport ?? ""} /></label></div><label>Scheduled time<input name="scheduledAt" type="datetime-local" defaultValue={dateTimeInput(firstFlight?.scheduled_at)} required /></label></>}
           {logisticsKind === "transport" && <><label>Pickup<input name="pickup" defaultValue={firstTransport?.pickup_location ?? ""} required /></label><label>Drop-off<input name="dropoff" defaultValue={firstTransport?.dropoff_location ?? ""} required /></label><label>Pickup time<input name="scheduledAt" type="datetime-local" defaultValue={dateTimeInput(firstTransport?.scheduled_pickup_at)} required /></label><div className="two"><label>Vehicle / plate<input name="vehicle" defaultValue={firstTransport?.vehicle_reference ?? ""} /></label><label>Driver name<input name="driverName" defaultValue={firstTransport?.driver_name ?? ""} /></label></div><label>Driver phone<input name="driverPhone" defaultValue={firstTransport?.driver_phone ?? ""} /></label></>}
-          {logisticsKind === "hotel" && <><label>Hotel name<input name="hotelName" defaultValue={firstHotel?.hotel_name ?? ""} required /></label><div className="two"><label>Room type<input name="roomType" defaultValue={firstHotel?.room_type ?? ""} /></label><label>Confirmation<input name="confirmation" defaultValue={firstHotel?.confirmation_number ?? ""} /></label></div><div className="two"><label>Check in<input name="checkIn" type="date" defaultValue={firstHotel?.check_in_date ?? ""} required /></label><label>Check out<input name="checkOut" type="date" defaultValue={firstHotel?.check_out_date ?? ""} required /></label></div></>}
+          {logisticsKind === "hotel" && <><label>Hotel name<input name="hotelName" defaultValue={firstHotel?.hotel_name ?? ""} required /></label><div className="two"><label>Room type<input name="roomType" defaultValue={firstHotel?.room_type ?? ""} /></label><label>Confirmation<input name="confirmation" defaultValue={firstHotel?.confirmation_number ?? ""} /></label></div><div className="two"><label>Check in<input name="checkIn" type="date" defaultValue={firstHotel?.check_in_date ?? ""} onChange={(e) => constrainFollowingDate(e, "checkOut", true)} required /></label><label>Check out<input name="checkOut" type="date" min={nextCalendarDate(firstHotel?.check_in_date ?? "")} defaultValue={firstHotel?.check_out_date ?? ""} required /></label></div><small className="phase-form-hint">Checkout must be at least one day after check-in.</small></>}
           <button className="mvp-primary" disabled={busy}>Save logistics</button>
         </form></>}
       </section></div>}
