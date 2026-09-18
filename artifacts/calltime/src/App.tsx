@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -20,9 +20,12 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import Dashboard from "./components/Dashboard";
 import BrandMark from "./components/BrandMark";
 import { Route as WouterRoute, Switch } from "wouter";
+
+const Dashboard = lazy(() => import("./components/Dashboard"));
+const PhaseOneAdmin = lazy(() => import("./components/PhaseOneAdmin"));
+const PersonalProfile = lazy(() => import("./components/PersonalProfile"));
 
 type Role = {
   name: string;
@@ -957,10 +960,14 @@ function LandingPage() {
 
 function App() {
   return (
-    <Switch>
-      <WouterRoute path="/dashboard" component={Dashboard} />
-      <WouterRoute path="/" component={LandingPage} />
-    </Switch>
+    <Suspense fallback={<div className="mvp-loading">Opening Calltime…</div>}>
+      <Switch>
+        <WouterRoute path="/p/:token" component={PersonalProfile} />
+        <WouterRoute path="/dashboard" component={PhaseOneAdmin} />
+        <WouterRoute path="/dashboard-preview" component={Dashboard} />
+        <WouterRoute path="/" component={LandingPage} />
+      </Switch>
+    </Suspense>
   );
 }
 

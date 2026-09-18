@@ -1,0 +1,7 @@
+project_id = "calltime-global-hub"
+
+[functions.generate-personal-link]
+verify_jwt = false
+
+[functions.personal-profile]
+verify_jwt = false
